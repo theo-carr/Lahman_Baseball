@@ -14,89 +14,66 @@ FROM teams;
 --report to 2 decimal places. Do the same for home runs per game. Do you see any trends?  Strikeouts
 --and home runs are increasing
 --strike outs 
-WITH sums AS (
-			WITH since_1920s AS (SELECT yearid,so, g,
-							CASE WHEN yearid <= 1879 THEN '1870s'
-								 WHEN yearid <= 1889 THEN '1880s'
-								 WHEN yearid <= 1899 THEN '1890s'
-								 WHEN yearid <= 1909 THEN '1900s'
-								 WHEN yearid <= 1919 THEN '1910s'
-								 WHEN yearid <= 1929 THEN '1920s'
-								 WHEN yearid <= 1939 THEN '1930s'
-								 WHEN yearid <= 1949 THEN '1940s'
-								 WHEN yearid <= 1959 THEN '1950s'
-								 WHEN yearid <= 1969 THEN '1960s'
-								 WHEN yearid <= 1979 THEN '1970s'
-								 WHEN yearid <= 1989 THEN '1980s'
-								 WHEN yearid <= 1999 THEN '1990s'
-								 WHEN yearid <= 2009 THEN '2000s'
-								 WHEN yearid <= 2019 THEN '2010s'
-								 WHEN yearid <= 2029 THEN '2020s'
-							ELSE 'NA' END AS decade
-						FROM pitching
-						WHERE yearid >= '1920')
-			 (SELECT SUM(g) AS sum_games, SUM(so) AS sum_so, decade--ROUND(AVG(so/ g ),2) AS avg_so_per_game, decade
-			FROM since_1920s
-			GROUP BY decade))
-SELECT sum_so / sum_games as avg_so_per_game, decade
-FROM sums
+WITH decade_labeled_table as (
+	SELECT teamid, 
+		   yearid,
+		   soa, 
+		   g,
+		   CASE WHEN yearid > 1920 AND yearid < 1931 THEN '1920s'
+				WHEN yearid > 1930 AND yearid < 1941 THEN '1930s'
+				WHEN yearid > 1940 AND yearid < 1951 THEN '1940s'
+				WHEN yearid > 1950 AND yearid < 1961 THEN '1950s'
+				WHEN yearid > 1960 AND yearid < 1971  THEN '1960s'
+				WHEN yearid > 1970 AND yearid < 1981 THEN '1970s'
+				WHEN yearid > 1980 AND yearid < 1991 THEN '1980s'
+				WHEN yearid > 1990 AND yearid < 2001 THEN '1990s'
+				WHEN yearid > 2000 AND yearid < 2011 THEN '2000s'
+				WHEN yearid > 2010 THEN '2010s' 
+				END AS decade
+	FROM teams
+)
+SELECT decade, 
+	   ROUND((total_soa::numeric/total_games::numeric),2) as avg_so_per_game
+FROM(
+	SELECT decade,
+		   SUM(soa) as total_soa,
+		   SUM(g) as total_games
+	FROM decade_labeled_table
+	WHERE decade IS NOT NULL
+	GROUP BY decade
+) as decade_labeled_sums	 
 ORDER BY decade;
 
---tried by year instead of decade and still get answers ~ 1-2 per game which doesnt make sense, but 
--- I calculated some by hand and it was the same so
-WITH sums AS (
-			WITH since_1920s AS (SELECT yearid,so, g,
-							CASE WHEN yearid <= 1879 THEN '1870s'
-								 WHEN yearid <= 1889 THEN '1880s'
-								 WHEN yearid <= 1899 THEN '1890s'
-								 WHEN yearid <= 1909 THEN '1900s'
-								 WHEN yearid <= 1919 THEN '1910s'
-								 WHEN yearid <= 1929 THEN '1920s'
-								 WHEN yearid <= 1939 THEN '1930s'
-								 WHEN yearid <= 1949 THEN '1940s'
-								 WHEN yearid <= 1959 THEN '1950s'
-								 WHEN yearid <= 1969 THEN '1960s'
-								 WHEN yearid <= 1979 THEN '1970s'
-								 WHEN yearid <= 1989 THEN '1980s'
-								 WHEN yearid <= 1999 THEN '1990s'
-								 WHEN yearid <= 2009 THEN '2000s'
-								 WHEN yearid <= 2019 THEN '2010s'
-								 WHEN yearid <= 2029 THEN '2020s'
-							ELSE 'NA' END AS decade
-						FROM pitching
-						WHERE yearid >= '1920')
-			 (SELECT SUM(g) AS sum_games, SUM(so) AS sum_so, yearid--ROUND(AVG(so/ g ),2) AS avg_so_per_game, decade
-			FROM since_1920s
-			GROUP BY yearid ORDER BY yearid))
-SELECT sum_so / sum_games as avg_so_per_game, yearid
-FROM sums
-ORDER BY yearid;
+--homeruns
 
----homeruns
-
-WITH since_1920s AS (SELECT yearid, hr, g,
-				CASE WHEN yearid <= 1879 THEN '1870s'
-					 WHEN yearid <= 1889 THEN '1880s'
-					 WHEN yearid <= 1899 THEN '1890s'
-					 WHEN yearid <= 1909 THEN '1900s'
-					 WHEN yearid <= 1919 THEN '1910s'
-					 WHEN yearid <= 1929 THEN '1920s'
-					 WHEN yearid <= 1939 THEN '1930s'
-					 WHEN yearid <= 1949 THEN '1940s'
-					 WHEN yearid <= 1959 THEN '1950s'
-					 WHEN yearid <= 1969 THEN '1960s'
-					 WHEN yearid <= 1979 THEN '1970s'
-					 WHEN yearid <= 1989 THEN '1980s'
-					 WHEN yearid <= 1999 THEN '1990s'
-					 WHEN yearid <= 2009 THEN '2000s'
-					 WHEN yearid <= 2019 THEN '2010s'
-					 WHEN yearid <= 2029 THEN '2020s'
-				ELSE 'NA' END AS decade
-			FROM pitching
-			WHERE yearid >= '1920')
-SELECT ROUND(AVG(hr/ g ),2) AS avg_hr_per_game, decade
-FROM since_1920s
-GROUP BY decade
+WITH decade_labeled_table as (
+	SELECT teamid, 
+		   yearid,
+		   hr, 
+		   g,
+		   CASE WHEN yearid > 1920 AND yearid < 1931 THEN '1920s'
+				WHEN yearid > 1930 AND yearid < 1941 THEN '1930s'
+				WHEN yearid > 1940 AND yearid < 1951 THEN '1940s'
+				WHEN yearid > 1950 AND yearid < 1961 THEN '1950s'
+				WHEN yearid > 1960  AND yearid < 1971  THEN '1960s'
+				WHEN yearid > 1970  AND yearid < 1981 THEN '1970s'
+				WHEN yearid > 1980 AND yearid < 1991 THEN '1980s'
+				WHEN yearid > 1990 AND yearid < 2001 THEN '1990s'
+				WHEN yearid > 2000 AND yearid < 2011 THEN '2000s'
+				WHEN yearid > 2010 THEN '2010s' 
+				END AS decade
+	FROM teams
+)
+SELECT decade, 
+	   ROUND((total_soa::numeric/total_games::numeric),2) as avg_hr_per_game
+FROM(
+	SELECT decade,
+		   SUM(hr) as total_soa,
+		   SUM(g) as total_games
+	FROM decade_labeled_table
+	WHERE decade IS NOT NULL
+	GROUP BY decade
+) as decade_labeled_sums	 
 ORDER BY decade;
 
 --Q6 Find the player who had the most success stealing bases in 2016, 
