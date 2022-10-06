@@ -97,6 +97,7 @@ WITH total_so AS (SELECT dist_players.playerid, throws, SUM(so) AS sum_so
 SELECT throws, SUM(sum_so) AS sum_so_by_lr
 FROM total_so
 GROUP BY throws;
+	
 
 
 SELECT * FROM pitching

@@ -116,11 +116,11 @@ FROM wins_no_ws;
 ----
 
 WITH wins_ws AS (SELECT yearid,teamid, w, wswin
-					FROM teams
-					WHERE yearid BETWEEN 1970 and 2016
-				 	--AND yearid <> 1981
-					AND wswin = 'Y'
-					ORDER BY w)
+				 FROM teams
+				 WHERE yearid BETWEEN 1970 and 2016
+				  --AND yearid <> 1981
+				  AND wswin = 'Y'
+				  ORDER BY w)
 SELECT MIN(w)
 FROM wins_ws;
 
@@ -138,3 +138,12 @@ from name_team
 WHERE wswin = 'Y' 
 AND w = top_wins
 
+
+-----other 	questions
+
+--q2Find the name and height of the shortest player in the database. 
+--How many games did he play in? What is the name of the team for which he played?
+
+SELECT playerid, namefirst || ' ' || namelast AS name, height
+FROM people
+ORDER BY height;
