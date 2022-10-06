@@ -10,14 +10,6 @@ WITH win_perc as  (SELECT yearid,name,ROUND(w::numeric/g::numeric*100,2) as win_
 					  AND yearid>=2000
 					  ORDER BY win_percent DESC)
 
-/*WITH avg_attendance AS (SELECT ROUND(AVG(attendance),2) AS avg_attend
-						FROM teams
-						WHERE yearid>=2000)
-
-SELECT ROUND(AVG(attendance),2)
-FROM teams
-WHERE yearid>=2000;
-*/
 SELECT yearid,
 	   COUNT(name) as total_teams,
 	   ROUND(AVG(win_percent),2) AS avg_win_percent_teams,
@@ -50,19 +42,14 @@ WHERE yearid>='2000'
 ORDER BY corr_win_attend DESC;
 
 /*SINCE 2000, OVER HALF OF THE YEARS SAW A POSITIVE CORRELATION
-BETWEEN WIN PERCENTAGE AND ATTENDANCE
-*/
-
-
---WORK ON MORE. Trying to count the years with correlation>0.5
-
-					   
+BETWEEN WIN PERCENTAGE AND ATTENDANCE.
 
 
 
 
 
-/*Question 12b-
+
+Question 12b-
 
 Do teams that win the world series see a boost in attendance the following year? 
 PLAYOFFS IN GENERAL IS DOWN BELOW
@@ -138,7 +125,7 @@ FROM (SELECT *,
 		ORDER BY ws1.yearid) AS increased_attend
 WHERE increased_attendance='increased';
 
-/* 57 TEAMS SAW AN INCREASE IN ATTENDANCE THE YEAR
+/* 57 TEAMS OUT OF 111 SAW AN INCREASE IN ATTENDANCE THE YEAR
    AFTER WINNING THE WORLD SERIES
 */  
 
@@ -149,7 +136,7 @@ WHERE increased_attendance='increased';
 Making the playoffs means either being a division winner or a wild card winner.
 */
 
---LOOK BACK OVER
+--DIVISION WINNERS
 
 WITH po_teams as (SELECT yearid,
 				   name,
@@ -159,20 +146,52 @@ WITH po_teams as (SELECT yearid,
 					FROM teams
 					WHERE name IN (SELECT name
 						   FROM teams
-						   WHERE divwin='Y'
-						OR wcwin='Y')
+						   WHERE divwin='Y')
 					ORDER BY name,
 							 yearid)
 							 
-SELECT *,
-		CASE WHEN po1.attendance<po2.attendance THEN 'increased'
-			 ELSE '' END AS increased_attendance
-FROM po_teams as po1
-INNER JOIN po_teams as po2 USING (name)
-WHERE po1.divwin='Y'
-	  OR po2.wcwin='Y'
-	 AND po2.yearid=po1.yearid+1
-	AND po1.attendance IS NOT NULL
-	AND po2.attendance IS NOT NULL
-ORDER BY po1.yearid;
+SELECT COUNT(increased_attendance) AS teams_with_increased_attendance
+FROM (SELECT *,
+			 CASE WHEN po1.attendance<po2.attendance THEN 'increased'
+				  ELSE '' END AS increased_attendance
+		FROM po_teams as po1
+		INNER JOIN po_teams as po2 USING (name)
+		WHERE po1.divwin='Y'
+			 AND po2.yearid=po1.yearid+1
+			AND po1.attendance IS NOT NULL
+			AND po2.attendance IS NOT NULL
+		ORDER BY po1.yearid) AS increased_attend
+WHERE increased_attendance='increased';
 
+--SINCE 1871, 127 division winners out of 229 saw an increase in attendance the following year.
+
+
+--WILDCARD WINNERS
+
+WITH po_teams as (SELECT yearid,
+				   name,
+				   divwin,
+				   wcwin,
+				   attendance
+					FROM teams
+					WHERE name IN (SELECT name
+						   FROM teams
+						   WHERE wcwin='Y')
+					ORDER BY name,
+							 yearid)
+							 
+SELECT COUNT(increased_attendance) AS teams_with_increased_attendance
+FROM (SELECT *,
+			 CASE WHEN po1.attendance<po2.attendance THEN 'increased'
+				  ELSE '' END AS increased_attendance
+		FROM po_teams as po1
+		INNER JOIN po_teams as po2 USING (name)
+		WHERE po1.wcwin='Y'
+			 AND po2.yearid=po1.yearid+1
+			AND po1.attendance IS NOT NULL
+			AND po2.attendance IS NOT NULL
+		ORDER BY po1.yearid) AS increased_attend
+WHERE increased_attendance='increased';
+
+--SINCE THE INSTITUTE OF THE WILD CARD GAME FOR THE PLAYOFFS IN 1994,
+--35 TEAMS OUT OF 50 SAW AN INCREASE IN ATTENDANCE THE FOLLOWING YEAR.
