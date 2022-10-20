@@ -1,5 +1,5 @@
 ## THIS WAS A GROUP PROJECT ##
-## My code can be found in the branch labeled "theo" & "question_11"
+## My code can be found in the branches labeled "theo" & "question_11"
 
 
 ## Lahman Baseball Database Exercise
